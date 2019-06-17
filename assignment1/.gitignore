@@ -1,0 +1,12 @@
+*.swp
+*.pyc
+.env/*
+*.ipynb_checkpoints/*
+
+# gitignore the built release.
+assignment3/*
+
+#ignore datasets
+cs231n/datasets/cifar-10-batches-py
+assignment1/cs231n/datasets/cifar-10-python.tar
+
