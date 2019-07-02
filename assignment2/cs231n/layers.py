@@ -527,8 +527,56 @@ def conv_forward_naive(x, w, b, conv_param):
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
+    #print(conv_param.get('pad'))
+    H_out_shape = 1 + (x.shape[2] + 2*conv_param.get('pad') - w.shape[2]) / conv_param.get('stride')
+    W_out_shape = 1 + (x.shape[3] + 2*conv_param.get('pad') - w.shape[3]) / conv_param.get('stride')
+       
+    x_filter_size = w.shape[1] * w.shape[2] * w.shape[3]
+    x_element_size = H_out_shape * W_out_shape
+    
+    print(W_out_shape)
+    
+    print("x_element_size")
+    print(x_element_size)
+    
+    filter_size_h = w.shape[2]
+    filter_size_w = w.shape[3]
+    
+    #store parameters
+    pad = conv_param['pad']
+    stride = conv_param.get('stride')
+ 
+    #padding, stolen from the world wide web
+    x_pad = np.pad(x, ((0,0),(0,0),(pad,pad),(pad,pad)), 'constant', constant_values=0)
 
+    #just some stuff for easier reading
+    N = x_pad.shape[0]
+    x_channel = x_pad.shape[1]
+    x_h = x_pad.shape[2]
+    x_w = x_pad.shape[3]
+    w_h = w.shape[2]
+    w_w = w.shape[3]
+    filters = w.shape[0]
+
+    #initialize all temp matricies and the out matrix with zeros and the size
+    out = np.zeros((N, filters, int(x_element_size)))
+    x_col = np.zeros((x_filter_size, int(x_element_size))) 
+    w_d = w.reshape(filters, x_filter_size) 
+   
+    #ok so first iteration over the sample size
+    #then iteration over the image with the filter size
+    #see hand written notes for more information
+    for i in range(N):
+        neuron = 0
+        for hh_s in range(0, (x_h - w_h + 1), stride):
+            for ww_s in range(0, (x_w - w_w + 1), stride):
+                x_col[:, neuron] = x_pad[i, :, hh_s:hh_s+w_h, ww_s:ww_s+w_w].reshape(x_filter_size)         
+                neuron += 1
+        out[i] = np.dot(w_d, x_col) + b.reshape(filters,1)
+
+    #reshape to target format  
+    out = np.reshape(out, (N, filters, int(H_out_shape), int(W_out_shape)))
+    
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     ###########################################################################
     #                             END OF YOUR CODE                            #
